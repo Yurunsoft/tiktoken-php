@@ -89,6 +89,10 @@ final class Encoder implements Stringable
         $currentChunk = [];
 
         foreach ($matches[0] as $match) {
+            if ($match === '') {
+                continue;
+            }
+
             $piece = EncodeUtil::toBytes($match);
             $rank = $this->vocab->tryGetRank($piece);
 

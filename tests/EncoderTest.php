@@ -40,6 +40,49 @@ final class EncoderTest extends TestCase
         );
     }
 
+    public function testEncodeChunks(): void
+    {
+        $vocab = Vocab::fromFile(__DIR__ . '/Fixtures/cl100k_base.tiktoken');
+        $encoder = new Encoder(
+            'cl100k_base',
+            $vocab,
+            '/(?i:\'s|\'t|\'re|\'ve|\'m|\'ll|\'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+/u',
+        );
+        self::assertSame(
+            [
+                [
+                    57668,
+                    53901,
+                ],
+                [
+                    3922,
+                    37271,
+                    36827,
+                    36827,
+                    30320,
+                    242,
+                    89151,
+                    16937,
+                    29826,
+                    28308,
+                    232,
+                ],
+                [
+                    3922,
+                    7305,
+                    225,
+                    165,
+                    98,
+                    255,
+                    35287,
+                    72027,
+                    11571,
+                ],
+            ],
+            $encoder->encodeChunks('你好，今天天气真不错啊，吃饭了没？', 10),
+        );
+    }
+
     public function testDecode(): void
     {
         $vocab = Vocab::fromFile(__DIR__ . '/Fixtures/cl100k_base.tiktoken');
