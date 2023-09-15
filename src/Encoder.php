@@ -73,6 +73,51 @@ final class Encoder implements Stringable
         return $tokens;
     }
 
+    /**
+     * @return int[][]
+     */
+    public function encodeChunks(string $text, int $maxTokenPerChunk): array
+    {
+        if ('' === $text) {
+            return [];
+        }
+
+        if (false === preg_match_all($this->pattern, $text, $matches)) {
+            throw new RegexError(sprintf('Matching failed with error: %s', preg_last_error_msg()));
+        }
+
+        $chunks = [];
+        $currentChunk = [];
+
+        foreach ($matches[0] as $match) {
+            $piece = EncodeUtil::toBytes($match);
+            $rank = $this->vocab->tryGetRank($piece);
+
+            $newTokens = [];
+            if (null !== $rank) {
+                $newTokens[] = $rank;
+            } else {
+                foreach ($this->mergeBytePairs($piece) as $rank)
+                {
+                    $newTokens[] = $rank;
+                }
+            }
+
+            if ((\count($currentChunk) + \count($newTokens)) > $maxTokenPerChunk) {
+                $chunks[] = $currentChunk;
+                $currentChunk = [];
+            }
+
+            $currentChunk = array_merge($currentChunk, $newTokens);
+        }
+
+        if (\count($currentChunk) > 0) {
+            $chunks[] = $currentChunk;
+        }
+
+        return $chunks;
+    }
+
     /** @param array<int> $tokens */
     public function decode(array $tokens): string
     {
