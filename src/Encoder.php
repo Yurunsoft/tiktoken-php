@@ -10,6 +10,7 @@ use Yethee\Tiktoken\Util\EncodeUtil;
 use Yethee\Tiktoken\Vocab\Vocab;
 
 use function array_map;
+use function array_merge;
 use function array_slice;
 use function array_values;
 use function assert;
@@ -73,16 +74,14 @@ final class Encoder implements Stringable
         return $tokens;
     }
 
-    /**
-     * @return int[][]
-     */
+    /** @return int[][] */
     public function encodeChunks(string $text, int $maxTokenPerChunk): array
     {
-        if ('' === $text) {
+        if ($text === '') {
             return [];
         }
 
-        if (false === preg_match_all($this->pattern, $text, $matches)) {
+        if (preg_match_all($this->pattern, $text, $matches) === false) {
             throw new RegexError(sprintf('Matching failed with error: %s', preg_last_error_msg()));
         }
 
@@ -94,16 +93,15 @@ final class Encoder implements Stringable
             $rank = $this->vocab->tryGetRank($piece);
 
             $newTokens = [];
-            if (null !== $rank) {
+            if ($rank !== null) {
                 $newTokens[] = $rank;
             } else {
-                foreach ($this->mergeBytePairs($piece) as $rank)
-                {
+                foreach ($this->mergeBytePairs($piece) as $rank) {
                     $newTokens[] = $rank;
                 }
             }
 
-            if ((\count($currentChunk) + \count($newTokens)) > $maxTokenPerChunk) {
+            if (count($currentChunk) + count($newTokens) > $maxTokenPerChunk) {
                 $chunks[] = $currentChunk;
                 $currentChunk = [];
             }
@@ -111,7 +109,7 @@ final class Encoder implements Stringable
             $currentChunk = array_merge($currentChunk, $newTokens);
         }
 
-        if (\count($currentChunk) > 0) {
+        if (count($currentChunk) > 0) {
             $chunks[] = $currentChunk;
         }
 
