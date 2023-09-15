@@ -1,5 +1,5 @@
 {
-  "name": "yethee/tiktoken",
+  "name": "yurunsoft/tiktoken",
   "type": "library",
   "license": "MIT",
   "description": "PHP version of tiktoken",
