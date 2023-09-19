@@ -120,6 +120,15 @@ final class Encoder implements Stringable
         return $chunks;
     }
 
+    /** @return string[] */
+    public function chunk(string $text, int $maxTokenPerChunk): array
+    {
+        return array_map(
+            [$this, 'decode'],
+            $this->encodeChunks($text, $maxTokenPerChunk),
+        );
+    }
+
     /** @param array<int> $tokens */
     public function decode(array $tokens): string
     {
